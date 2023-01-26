@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, render_template, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import db_data
@@ -36,17 +36,19 @@ class Order(db.Model):
     price = db.Column(db.Integer)
     customer_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     # executor_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    executor_id = db.Column(db.Integer)
+    executor_id = db.Column(db.Integer, db.ForeignKey("offer.executor_id"))
 
-    offer = relationship("Offer")
+
 
 
 class Offer(db.Model):
     __tablename__ = "offer"
 
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey("order.id"))
+    order_id = db.Column(db.Integer)
     executor_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    order = relationship("Order")
 
 
 with app.app_context():
@@ -93,6 +95,17 @@ with app.app_context():
 
     print(db.session.query(Offer).all())
     db.session.commit()
+
+
+
+@app.route("/")
+def page_index():
+    return "Ok"
+
+@app.errorhandler(404)
+def error_404(error):
+    return "Запрошенная страница не существует", 404
+
 
 if __name__ == "__main__":
     app.run()
